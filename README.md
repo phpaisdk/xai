@@ -23,6 +23,21 @@ $result = Generate::text()
 echo $result->text;
 ```
 
+## Image Generation
+
+```php
+use AiSdk\Generate;
+use AiSdk\XAI;
+
+$result = Generate::image()
+    ->model(XAI::image('grok-imagine-image-quality'))
+    ->prompt('A clean app icon for a PHP AI SDK')
+    ->aspectRatio('1:1')
+    ->run();
+
+$result->output->save(__DIR__.'/icon.png');
+```
+
 ## Configuration
 
 | Variable | Description | Default |
