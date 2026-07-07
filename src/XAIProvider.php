@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace AiSdk\XAI;
 
 use AiSdk\Contracts\BaseProvider;
+use AiSdk\Contracts\ImageModelInterface;
 use AiSdk\Contracts\TextModelInterface;
+use AiSdk\XAI\Models\XAIImageModel;
 use AiSdk\XAI\Models\XAITextModel;
 
 final class XAIProvider extends BaseProvider
@@ -20,5 +22,10 @@ final class XAIProvider extends BaseProvider
     public function textModel(string $modelId): TextModelInterface
     {
         return new XAITextModel($modelId, $this->options, $this->modelRegistry());
+    }
+
+    public function imageModel(string $modelId): ImageModelInterface
+    {
+        return new XAIImageModel($modelId, $this->options, $this->modelRegistry());
     }
 }

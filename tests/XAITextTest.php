@@ -54,6 +54,41 @@ it('generates text end to end through the XAI vertical', function () {
         ->and($client->lastRequest->getHeaderLine('Authorization'))->toBe('Bearer xai-test');
 });
 
+it('generates images through the XAI vertical', function () {
+    $client = new FakeHttpClient(200, json_encode([
+        'created' => 1710000000,
+        'data' => [['b64_json' => base64_encode('jpeg-bytes')]],
+        'usage' => ['prompt_tokens' => 6, 'completion_tokens' => 8, 'total_tokens' => 14],
+    ]));
+    configureXAIWith($client);
+
+    XAI::create(['apiKey' => 'xai-test']);
+
+    $result = Generate::image()
+        ->model(XAI::image('grok-imagine-image-quality'))
+        ->prompt('A futuristic skyline')
+        ->count(2)
+        ->aspectRatio('16:9')
+        ->providerOptions('xai', ['raw' => ['resolution' => '2k']])
+        ->run();
+
+    expect($result->output->base64)->toBe(base64_encode('jpeg-bytes'))
+        ->and($result->usage->totalTokens)->toBe(14);
+
+    $body = $client->sentBody();
+    expect($body)->toMatchArray([
+        'model' => 'grok-imagine-image-quality',
+        'prompt' => 'A futuristic skyline',
+        'n' => 2,
+        'response_format' => 'b64_json',
+        'aspect_ratio' => '16:9',
+        'resolution' => '2k',
+    ])->and($body)->not->toHaveKey('size');
+
+    expect($client->lastRequest->getUri()->getPath())->toBe('/v1/images/generations')
+        ->and($client->lastRequest->getHeaderLine('Authorization'))->toBe('Bearer xai-test');
+});
+
 it('maps portable reasoning effort onto the OpenAI-compatible request shape', function () {
     $client = new FakeHttpClient(200, json_encode([
         'choices' => [['message' => ['content' => 'Done'], 'finish_reason' => 'stop']],
@@ -73,5 +108,6 @@ it('loads model capabilities from resources models json', function () {
     XAI::create(['apiKey' => 'xai-test']);
 
     expect(XAI::model('grok-4.3')->supports(Capability::Reasoning))->toBeTrue()
-        ->and(XAI::model('grok-2-vision')->supports(Capability::ImageInput))->toBeTrue();
+        ->and(XAI::model('grok-2-vision')->supports(Capability::ImageInput))->toBeTrue()
+        ->and(XAI::image('grok-imagine-image-quality')->supports(Capability::ImageGeneration))->toBeTrue();
 });
