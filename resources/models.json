@@ -1,0 +1,26 @@
+{
+  "provider": "xai",
+  "models": [
+    {
+      "id": "grok-4*",
+      "lab": "xai",
+      "status": "stable",
+      "modalities": ["text"],
+      "capabilities": ["text_generation", "streaming", "tool_calling", "structured_output", "reasoning", "text_input", "image_input"]
+    },
+    {
+      "id": "grok-3*",
+      "lab": "xai",
+      "status": "stable",
+      "modalities": ["text"],
+      "capabilities": ["text_generation", "streaming", "tool_calling", "structured_output", "reasoning", "text_input", "image_input"]
+    },
+    {
+      "id": "grok-2*",
+      "lab": "xai",
+      "status": "stable",
+      "modalities": ["text"],
+      "capabilities": ["text_generation", "streaming", "tool_calling", "structured_output", "text_input", "image_input"]
+    }
+  ]
+}
