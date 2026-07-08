@@ -89,6 +89,38 @@ it('generates images through the XAI vertical', function () {
         ->and($client->lastRequest->getHeaderLine('Authorization'))->toBe('Bearer xai-test');
 });
 
+it('generates speech through the XAI vertical', function () {
+    $client = new FakeHttpClient(200, 'audio-bytes', 'audio/mpeg');
+    configureXAIWith($client);
+
+    XAI::create(['apiKey' => 'xai-test']);
+
+    $result = Generate::speech()
+        ->model(XAI::speech('grok-voice'))
+        ->input('Hello from xAI voice.')
+        ->voice('eve')
+        ->format('mp3')
+        ->providerOptions('xai', ['language' => 'auto', 'speed' => 1.1])
+        ->run();
+
+    expect($result->output->data)->toBe('audio-bytes')
+        ->and($result->output->mimeType)->toBe('audio/mpeg')
+        ->and($result->providerMetadata['xai']['model'])->toBe('grok-voice');
+
+    $body = $client->sentBody();
+    expect($body)->toMatchArray([
+        'text' => 'Hello from xAI voice.',
+        'voice_id' => 'eve',
+        'language' => 'auto',
+        'output_format' => ['codec' => 'mp3'],
+        'speed' => 1.1,
+    ]);
+
+    expect($client->lastRequest->getUri()->getPath())->toBe('/v1/tts')
+        ->and($client->lastRequest->getHeaderLine('Accept'))->toBe('audio/mpeg')
+        ->and($client->lastRequest->getHeaderLine('Authorization'))->toBe('Bearer xai-test');
+});
+
 it('maps portable reasoning effort onto the OpenAI-compatible request shape', function () {
     $client = new FakeHttpClient(200, json_encode([
         'choices' => [['message' => ['content' => 'Done'], 'finish_reason' => 'stop']],
@@ -109,5 +141,6 @@ it('loads model capabilities from resources models json', function () {
 
     expect(XAI::model('grok-4.3')->supports(Capability::Reasoning))->toBeTrue()
         ->and(XAI::model('grok-2-vision')->supports(Capability::ImageInput))->toBeTrue()
-        ->and(XAI::image('grok-imagine-image-quality')->supports(Capability::ImageGeneration))->toBeTrue();
+        ->and(XAI::image('grok-imagine-image-quality')->supports(Capability::ImageGeneration))->toBeTrue()
+        ->and(XAI::speech('grok-voice')->supports(Capability::SpeechGeneration))->toBeTrue();
 });

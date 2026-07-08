@@ -38,6 +38,26 @@ $result = Generate::image()
 $result->output->save(__DIR__.'/icon.png');
 ```
 
+## Speech Generation
+
+```php
+use AiSdk\Generate;
+use AiSdk\XAI;
+
+$result = Generate::speech()
+    ->model(XAI::speech('grok-voice'))
+    ->input('Hello from xAI voice.')
+    ->voice('eve')
+    ->format('mp3')
+    ->providerOptions('xai', [
+        'language' => 'auto',
+        'speed' => 1.1,
+    ])
+    ->run();
+
+$result->output->save(__DIR__.'/speech.mp3');
+```
+
 ## Configuration
 
 | Variable | Description | Default |

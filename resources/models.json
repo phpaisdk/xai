@@ -2,6 +2,18 @@
   "provider": "xai",
   "models": [
     {
+      "id": "grok-voice",
+      "lab": "xai",
+      "status": "stable",
+      "modalities": [
+        "audio"
+      ],
+      "capabilities": [
+        "speech_generation",
+        "text_input"
+      ]
+    },
+    {
       "id": "grok-imagine-image-quality",
       "lab": "xai",
       "status": "stable",
