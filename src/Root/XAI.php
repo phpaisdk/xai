@@ -7,14 +7,11 @@ namespace AiSdk;
 use AiSdk\Contracts\ImageModelInterface;
 use AiSdk\Contracts\SpeechModelInterface;
 use AiSdk\Contracts\TextModelInterface;
-use AiSdk\Support\Concerns\RegistersModels;
 use AiSdk\XAI\XAIOptions;
 use AiSdk\XAI\XAIProvider;
 
 final class XAI
 {
-    use RegistersModels;
-
     private static ?XAIProvider $default = null;
 
     /**

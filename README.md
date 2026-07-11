@@ -23,6 +23,8 @@ $result = Generate::text()
 echo $result->text;
 ```
 
+Model IDs pass through unchanged and do not need to be registered. This package does not ship a model inventory; the SDK performs internal adapter validation before xAI validates support for the selected model.
+
 ## Image Generation
 
 ```php

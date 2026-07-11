@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use AiSdk\Capability;
 use AiSdk\Generate;
 use AiSdk\Reasoning;
 use AiSdk\Support\Sdk;
@@ -136,11 +135,10 @@ it('maps portable reasoning effort onto the OpenAI-compatible request shape', fu
     expect($client->sentBody()['reasoning_effort'])->toBe('low');
 });
 
-it('loads model capabilities from resources models json', function () {
+it('accepts opaque model ids for every implemented modality', function () {
     XAI::create(['apiKey' => 'xai-test']);
 
-    expect(XAI::model('grok-4.3')->supports(Capability::Reasoning))->toBeTrue()
-        ->and(XAI::model('grok-2-vision')->supports(Capability::ImageInput))->toBeTrue()
-        ->and(XAI::image('grok-imagine-image-quality')->supports(Capability::ImageGeneration))->toBeTrue()
-        ->and(XAI::speech('grok-voice')->supports(Capability::SpeechGeneration))->toBeTrue();
+    expect(XAI::model('future-text-model')->modelId())->toBe('future-text-model')
+        ->and(XAI::image('future-image-model')->modelId())->toBe('future-image-model')
+        ->and(XAI::speech('future-speech-model')->modelId())->toBe('future-speech-model');
 });

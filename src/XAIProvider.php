@@ -23,16 +23,16 @@ final class XAIProvider extends BaseProvider
 
     public function textModel(string $modelId): TextModelInterface
     {
-        return new XAITextModel($modelId, $this->options, $this->modelRegistry());
+        return new XAITextModel($modelId, $this->options);
     }
 
     public function imageModel(string $modelId): ImageModelInterface
     {
-        return new XAIImageModel($modelId, $this->options, $this->modelRegistry());
+        return new XAIImageModel($modelId, $this->options);
     }
 
     public function speechModel(string $modelId): SpeechModelInterface
     {
-        return new XAISpeechModel($modelId, $this->options, $this->modelRegistry());
+        return new XAISpeechModel($modelId, $this->options);
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace AiSdk\XAI\Models;
 
 use AiSdk\Capability;
-use AiSdk\CapabilitySupport;
 use AiSdk\Contracts\BaseModel;
 use AiSdk\Contracts\TextModelInterface;
 use AiSdk\OpenAICompatible\ChatRequestBuilder;
@@ -13,18 +12,25 @@ use AiSdk\OpenAICompatible\ChatResponseParser;
 use AiSdk\OpenAICompatible\ChatStreamParser;
 use AiSdk\Requests\TextModelRequest;
 use AiSdk\Responses\TextModelResponse;
-use AiSdk\Support\ModelCatalog;
-use AiSdk\Support\ModelRegistry;
 use AiSdk\Utils\Support\Url;
 use AiSdk\XAI\XAIOptions;
 use Generator;
 
 final class XAITextModel extends BaseModel implements TextModelInterface
 {
+    private const array ADAPTER_CAPABILITIES = [
+        Capability::TextGeneration,
+        Capability::Streaming,
+        Capability::ToolCalling,
+        Capability::StructuredOutput,
+        Capability::Reasoning,
+        Capability::TextInput,
+        Capability::ImageInput,
+    ];
+
     public function __construct(
         private readonly string $modelId,
         private readonly XAIOptions $options,
-        private readonly ?ModelRegistry $registry = null,
     ) {}
 
     public function provider(): string
@@ -37,43 +43,10 @@ final class XAITextModel extends BaseModel implements TextModelInterface
         return $this->modelId;
     }
 
-    /**
-     * @return array<int, Capability>
-     */
-    public function capabilities(): array
-    {
-        $definition = $this->registry?->resolve($this->provider(), $this->modelId);
-        if ($definition !== null) {
-            return $this->configuredCapabilities($definition->capabilities);
-        }
-
-        return $this->configuredCapabilities($this->catalog()->capabilities($this->modelId));
-    }
-
-    public function capability(Capability $capability): CapabilitySupport
-    {
-        $configured = $this->configuredCapability($capability);
-        if ($configured !== null) {
-            return $configured;
-        }
-
-        $registered = $this->registry?->capability($this->provider(), $this->modelId, $capability);
-        if ($registered !== null) {
-            return $registered;
-        }
-
-        $support = $this->catalog()->capability($this->modelId, $capability);
-        if (! $support->isSupported()
-            && $capability === Capability::TextGeneration
-            && $this->catalog()->capabilities($this->modelId) === []) {
-            return CapabilitySupport::supported($capability, 'unknown-model-fallback');
-        }
-
-        return $support;
-    }
-
     public function generate(TextModelRequest $request): TextModelResponse
     {
+        $this->ensureTextRequestSupported($request, self::ADAPTER_CAPABILITIES);
+
         $body = ChatRequestBuilder::build($this->modelId, $this->provider(), $request, stream: false);
         $url = Url::joinPath($this->options->baseUrl, '/chat/completions');
 
@@ -85,6 +58,8 @@ final class XAITextModel extends BaseModel implements TextModelInterface
 
     public function stream(TextModelRequest $request): Generator
     {
+        $this->ensureTextRequestSupported($request, self::ADAPTER_CAPABILITIES, streaming: true);
+
         $body = ChatRequestBuilder::build($this->modelId, $this->provider(), $request, stream: true);
         $url = Url::joinPath($this->options->baseUrl, '/chat/completions');
 
@@ -92,10 +67,5 @@ final class XAITextModel extends BaseModel implements TextModelInterface
             ->postStream($url, $body, $this->options->authHeaders(), $this->provider());
 
         yield from ChatStreamParser::parse($events, $this->provider());
-    }
-
-    private function catalog(): ModelCatalog
-    {
-        return ModelCatalog::fromFile(dirname(__DIR__, 2).'/resources/models.json');
     }
 }
