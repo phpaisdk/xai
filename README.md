@@ -1,6 +1,6 @@
 # aisdk/xai
 
-Official xAI provider for the PHP AI SDK. Uses the shared OpenAI-compatible chat-completions adapter for v0.1 text support.
+Official xAI provider for the PHP AI SDK. Uses shared OpenAI-compatible wire adapters for text and embedding generation.
 
 ## Installation
 
@@ -24,6 +24,27 @@ echo $result->text;
 ```
 
 Model IDs pass through unchanged and do not need to be registered. This package does not ship a model inventory; the SDK performs internal adapter validation before xAI validates support for the selected model.
+
+## Embeddings
+
+xAI recommends prefixing retrieval queries with `query: ` and documents with `passage: `:
+
+```php
+use AiSdk\Generate;
+use AiSdk\XAI;
+
+$result = Generate::embedding([
+    'query: framework-agnostic PHP AI SDK',
+    'passage: Build provider-neutral AI features in PHP.',
+])
+    ->model(XAI::embedding('grok-embedding-small'))
+    ->dimensions(512)
+    ->providerOptions('xai', ['user' => 'user-123'])
+    ->run();
+
+$queryVector = $result->embeddings[0]->vector;
+$passageVector = $result->embeddings[1]->vector;
+```
 
 ## Image Generation
 
@@ -101,3 +122,8 @@ $result = Generate::text('Hello')
 ```bash
 composer test
 ```
+
+## Links
+
+- [xAI API OpenAPI Specification](https://docs.x.ai/openapi.json)
+- [Core Package](https://github.com/phpaisdk/core)
