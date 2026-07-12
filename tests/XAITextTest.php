@@ -2,7 +2,11 @@
 
 declare(strict_types=1);
 
+use AiSdk\Content;
+use AiSdk\Exceptions\CapabilityNotSupportedException;
 use AiSdk\Generate;
+use AiSdk\InputEncoding;
+use AiSdk\Message;
 use AiSdk\Reasoning;
 use AiSdk\Support\Sdk;
 use AiSdk\XAI;
@@ -141,4 +145,23 @@ it('accepts opaque model ids for every implemented modality', function () {
     expect(XAI::model('future-text-model')->modelId())->toBe('future-text-model')
         ->and(XAI::image('future-image-model')->modelId())->toBe('future-image-model')
         ->and(XAI::speech('future-speech-model')->modelId())->toBe('future-speech-model');
+});
+
+it('rejects unsupported audio input before sending an xAI request', function () {
+    $client = new FakeHttpClient(200, json_encode([]));
+    configureXAIWith($client);
+    XAI::create(['apiKey' => 'xai-test']);
+
+    expect(fn () => Generate::text()
+        ->messages([
+            Message::user([
+                Content::text('Transcribe this.'),
+                Content::audio('UklGRg==', mimeType: 'audio/wav', encoding: InputEncoding::Base64),
+            ]),
+        ])
+        ->model(XAI::model('grok-4.3'))
+        ->run())
+        ->toThrow(CapabilityNotSupportedException::class);
+
+    expect($client->lastRequest)->toBeNull();
 });

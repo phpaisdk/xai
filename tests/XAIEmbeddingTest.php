@@ -13,10 +13,11 @@ afterEach(function () {
     XAI::reset();
 });
 
-it('generates xAI embeddings using the documented OpenAI-shaped endpoint', function () {
+it('generates embeddings with a model id discovered from xAI model metadata', function () {
+    $discoveredEmbeddingModelId = 'v1';
     $client = new FakeHttpClient(200, json_encode([
         'object' => 'list',
-        'model' => 'grok-embedding-small',
+        'model' => $discoveredEmbeddingModelId,
         'data' => [['object' => 'embedding', 'index' => 0, 'embedding' => [0.1, 0.2]]],
         'usage' => ['prompt_tokens' => 5, 'total_tokens' => 5],
     ]));
@@ -25,7 +26,7 @@ it('generates xAI embeddings using the documented OpenAI-shaped endpoint', funct
     XAI::create(['apiKey' => 'xai-test']);
 
     $result = Generate::embedding('query: PHP AI SDK')
-        ->model(XAI::embedding('grok-embedding-small'))
+        ->model(XAI::embedding($discoveredEmbeddingModelId))
         ->dimensions(512)
         ->providerOptions('xai', ['user' => 'user-123'])
         ->run();
@@ -34,7 +35,7 @@ it('generates xAI embeddings using the documented OpenAI-shaped endpoint', funct
         ->and($result->usage->inputTokens)->toBe(5)
         ->and($client->lastRequest?->getUri()->getPath())->toBe('/v1/embeddings')
         ->and($client->sentBody())->toMatchArray([
-            'model' => 'grok-embedding-small',
+            'model' => $discoveredEmbeddingModelId,
             'input' => ['query: PHP AI SDK'],
             'encoding_format' => 'float',
             'dimensions' => 512,

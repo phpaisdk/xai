@@ -8,6 +8,7 @@ use AiSdk\Contracts\EmbeddingModelInterface;
 use AiSdk\Contracts\ImageModelInterface;
 use AiSdk\Contracts\SpeechModelInterface;
 use AiSdk\Contracts\TextModelInterface;
+use AiSdk\Contracts\VideoModelInterface;
 use AiSdk\XAI\XAIOptions;
 use AiSdk\XAI\XAIProvider;
 
@@ -46,6 +47,11 @@ final class XAI
     public static function speech(string $modelId): SpeechModelInterface
     {
         return self::default()->speechModel($modelId);
+    }
+
+    public static function video(string $modelId): VideoModelInterface
+    {
+        return self::default()->videoModel($modelId);
     }
 
     public static function embedding(string $modelId): EmbeddingModelInterface

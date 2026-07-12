@@ -15,10 +15,7 @@ use AiSdk\XAI\XAIOptions;
 
 final class XAIEmbeddingModel extends BaseModel implements EmbeddingModelInterface
 {
-    public function __construct(
-        private readonly string $modelId,
-        private readonly XAIOptions $options,
-    ) {}
+    public function __construct(private readonly string $modelId, private readonly XAIOptions $options) {}
 
     public function provider(): string
     {
@@ -33,12 +30,7 @@ final class XAIEmbeddingModel extends BaseModel implements EmbeddingModelInterfa
     public function generate(EmbeddingRequest $request): EmbeddingResponse
     {
         $body = EmbeddingRequestBuilder::build($this->modelId, $this->provider(), $request);
-        $payload = $this->runner($this->options->sdk)->postJson(
-            Url::joinPath($this->options->baseUrl, '/embeddings'),
-            $body,
-            $this->options->authHeaders(),
-            $this->provider(),
-        );
+        $payload = $this->runner($this->options->sdk)->postJson(Url::joinPath($this->options->baseUrl, '/embeddings'), $body, $this->options->authHeaders(), $this->provider());
 
         return EmbeddingResponseParser::parse($payload, $this->provider(), count($request->inputs));
     }
