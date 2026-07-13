@@ -60,6 +60,27 @@ $result = Generate::speech()
 $result->output->save(__DIR__.'/speech.mp3');
 ```
 
+## Transcription
+
+```php
+use AiSdk\Content;
+use AiSdk\Generate;
+use AiSdk\XAI;
+
+$result = Generate::transcription(Content::audio(__DIR__.'/meeting.mp3'))
+    ->model(XAI::transcription())
+    ->providerOptions('xai', [
+        'language' => 'en',
+        'diarize' => true,
+        'keyterm' => ['PHP', 'AI SDK'],
+    ])
+    ->run();
+
+echo $result->output->text;
+```
+
+The xAI STT endpoint does not accept a model field, so `XAI::transcription()` uses the provider's transcription service directly. Local audio and HTTP URLs are supported.
+
 ## Configuration
 
 ## Video Generation
@@ -119,4 +140,5 @@ composer test
 
 - [xAI API OpenAPI Specification](https://docs.x.ai/openapi.json)
 - [xAI Image Generation Guide](https://docs.x.ai/docs/guides/image-generation)
+- [xAI Speech-to-Text Guide](https://docs.x.ai/developers/model-capabilities/audio/speech-to-text)
 - [Core Package](https://github.com/phpaisdk/core)
