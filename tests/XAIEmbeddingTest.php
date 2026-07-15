@@ -26,7 +26,7 @@ it('generates embeddings with a model id discovered from xAI model metadata', fu
     XAI::create(['apiKey' => 'xai-test']);
 
     $result = Generate::embedding('query: PHP AI SDK')
-        ->model(XAI::embedding($discoveredEmbeddingModelId))
+        ->model(XAI::model($discoveredEmbeddingModelId))
         ->dimensions(512)
         ->providerOptions('xai', ['user' => 'user-123'])
         ->run();

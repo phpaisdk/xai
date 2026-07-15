@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use AiSdk\Contracts\EmbeddingProviderInterface;
 use AiSdk\Contracts\ImageProviderInterface;
+use AiSdk\Contracts\LiveProviderInterface;
 use AiSdk\Contracts\SpeechProviderInterface;
 use AiSdk\Contracts\TextProviderInterface;
 use AiSdk\Contracts\TranscriptionProviderInterface;
@@ -23,10 +24,15 @@ it('declares every currently supported xAI provider modality', function () {
         ->toBeInstanceOf(TranscriptionProviderInterface::class)
         ->toBeInstanceOf(EmbeddingProviderInterface::class)
         ->toBeInstanceOf(VideoProviderInterface::class)
-        ->and($provider->textModel('grok-4.3')->modelId())->toBe('grok-4.3')
-        ->and($provider->imageModel('grok-imagine-image-quality')->modelId())->toBe('grok-imagine-image-quality')
-        ->and($provider->speechModel('grok-voice')->modelId())->toBe('grok-voice')
-        ->and($provider->transcriptionModel('grok-transcribe')->modelId())->toBe('grok-transcribe')
-        ->and($provider->embeddingModel('v1')->modelId())->toBe('v1')
-        ->and(XAI::embedding('v1')->modelId())->toBe('v1');
+        ->toBeInstanceOf(LiveProviderInterface::class)
+        ->and($provider->model('grok-4.3')->modelId())->toBe('grok-4.3')
+        ->and(XAI::model('v1')->modelId())->toBe('v1');
+
+    expect(is_callable([$provider, 'textModel']))->toBeFalse()
+        ->and(is_callable([$provider, 'imageModel']))->toBeFalse()
+        ->and(is_callable([$provider, 'speechModel']))->toBeFalse()
+        ->and(is_callable([$provider, 'transcriptionModel']))->toBeFalse()
+        ->and(is_callable([$provider, 'embeddingModel']))->toBeFalse()
+        ->and(is_callable([$provider, 'videoModel']))->toBeFalse()
+        ->and(is_callable([$provider, 'liveModel']))->toBeFalse();
 });

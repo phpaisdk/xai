@@ -21,7 +21,7 @@ it('uses the xAI STT wire format with the file part last', function () {
     XAI::create(['apiKey' => 'xai-test']);
 
     $result = Generate::transcription(Content::audio('mp3-bytes', 'audio/mpeg', 'clip.mp3'))
-        ->model(XAI::transcription())
+        ->model(XAI::model('grok-transcribe'))
         ->providerOptions('xai', ['diarize' => true, 'keyterm' => ['PHP', 'SDK']])
         ->run();
 

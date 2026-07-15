@@ -68,7 +68,7 @@ it('generates images through the XAI vertical', function () {
     XAI::create(['apiKey' => 'xai-test']);
 
     $result = Generate::image()
-        ->model(XAI::image('grok-imagine-image-quality'))
+        ->model(XAI::model('grok-imagine-image-quality'))
         ->prompt('A futuristic skyline')
         ->count(2)
         ->aspectRatio('16:9')
@@ -99,7 +99,7 @@ it('generates speech through the XAI vertical', function () {
     XAI::create(['apiKey' => 'xai-test']);
 
     $result = Generate::speech()
-        ->model(XAI::speech('grok-voice'))
+        ->model(XAI::model('grok-voice'))
         ->input('Hello from xAI voice.')
         ->voice('eve')
         ->format('mp3')
@@ -143,8 +143,8 @@ it('accepts opaque model ids for every implemented modality', function () {
     XAI::create(['apiKey' => 'xai-test']);
 
     expect(XAI::model('future-text-model')->modelId())->toBe('future-text-model')
-        ->and(XAI::image('future-image-model')->modelId())->toBe('future-image-model')
-        ->and(XAI::speech('future-speech-model')->modelId())->toBe('future-speech-model');
+        ->and(XAI::model('future-image-model')->modelId())->toBe('future-image-model')
+        ->and(XAI::model('future-speech-model')->modelId())->toBe('future-speech-model');
 });
 
 it('rejects unsupported audio input before sending an xAI request', function () {

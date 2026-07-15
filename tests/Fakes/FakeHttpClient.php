@@ -13,17 +13,27 @@ final class FakeHttpClient implements ClientInterface
 {
     public ?RequestInterface $lastRequest = null;
 
+    /** @var list<RequestInterface> */
+    public array $requests = [];
+
+    /** @param array<string, string> $headers */
     public function __construct(
         private readonly int $status,
         private readonly string $body,
         private readonly string $contentType = 'application/json',
+        private readonly array $headers = [],
     ) {}
 
     public function sendRequest(RequestInterface $request): ResponseInterface
     {
         $this->lastRequest = $request;
+        $this->requests[] = $request;
 
-        return new Response($this->status, ['Content-Type' => $this->contentType], $this->body);
+        return new Response(
+            $this->status,
+            array_replace(['Content-Type' => $this->contentType], $this->headers),
+            $this->body,
+        );
     }
 
     /**
