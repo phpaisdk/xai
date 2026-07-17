@@ -404,11 +404,13 @@ composer test
 The default suite uses protocol fixtures and conformance checks. Credentialed
 Live network verification is separate from the default test run.
 
-## Links
+## Documentation
 
-- [xAI API OpenAPI Specification](https://docs.x.ai/openapi.json)
-- [xAI Image Generation Guide](https://docs.x.ai/docs/guides/image-generation)
-- [xAI Speech-to-Text Guide](https://docs.x.ai/developers/model-capabilities/audio/speech-to-text)
-- [xAI Voice Agent Guide](https://docs.x.ai/developers/model-capabilities/audio/voice-agent)
-- [xAI SIP Guide](https://docs.x.ai/developers/model-capabilities/audio/voice-agent/sip)
-- [Core Package](https://github.com/phpaisdk/core)
+- [PHP AI SDK documentation](https://phpaisdk.com/docs)
+- [xAI documentation](https://phpaisdk.com/docs/xai)
+
+## Community
+
+- [Contributing](https://github.com/phpaisdk/.github/blob/main/CONTRIBUTING.md)
+- [Support](https://github.com/phpaisdk/.github/blob/main/SUPPORT.md)
+- For private security reports, email [security@phpaisdk.com](mailto:security@phpaisdk.com).
