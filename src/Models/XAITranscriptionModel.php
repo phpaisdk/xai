@@ -44,7 +44,7 @@ final class XAITranscriptionModel extends BaseModel implements TranscriptionMode
         $url = Url::joinPath($this->options->baseUrl, '/stt');
         $httpRequest = $sdk->requestFactory->createRequest('POST', $url)
             ->withBody($sdk->streamFactory->createStream($multipart['body']))
-            ->withHeader('Content-Type', 'multipart/form-data; boundary='.$multipart['boundary'])
+            ->withHeader('Content-Type', 'multipart/form-data; boundary=' . $multipart['boundary'])
             ->withHeader('Accept', 'application/json');
 
         foreach ($this->options->authHeaders() as $name => $value) {

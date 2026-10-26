@@ -17,7 +17,7 @@ final class FakeTransport implements TransportInterface
 
     public function __construct()
     {
-        $this->connection = new FakeTransportConnection;
+        $this->connection = new FakeTransportConnection();
     }
 
     public function supports(TransportEndpoint $endpoint): bool

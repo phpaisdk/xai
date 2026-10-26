@@ -20,7 +20,7 @@ afterEach(function () {
 
 function configureXAIWith(FakeHttpClient $client): void
 {
-    $factory = new Psr17Factory;
+    $factory = new Psr17Factory();
     Generate::configure(new Sdk(
         httpClient: $client,
         requestFactory: $factory,
@@ -152,7 +152,7 @@ it('rejects unsupported audio input before sending an xAI request', function () 
     configureXAIWith($client);
     XAI::create(['apiKey' => 'xai-test']);
 
-    expect(fn () => Generate::text()
+    expect(fn() => Generate::text()
         ->messages([
             Message::user([
                 Content::text('Transcribe this.'),

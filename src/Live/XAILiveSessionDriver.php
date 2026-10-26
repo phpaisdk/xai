@@ -386,7 +386,7 @@ final class XAILiveSessionDriver implements LiveSessionDriverInterface
         $base = preg_replace('#^https://#', 'wss://', $base ?? $this->options->baseUrl) ?? $this->options->baseUrl;
 
         if ($this->callId !== null) {
-            return Url::joinPath($base, '/realtime').'?call_id='.rawurlencode($this->callId);
+            return Url::joinPath($base, '/realtime') . '?call_id=' . rawurlencode($this->callId);
         }
 
         $query = ['model' => $this->modelId];
@@ -399,7 +399,7 @@ final class XAILiveSessionDriver implements LiveSessionDriverInterface
             }
         }
 
-        return Url::joinPath($base, '/realtime').'?'.http_build_query($query, encoding_type: PHP_QUERY_RFC3986);
+        return Url::joinPath($base, '/realtime') . '?' . http_build_query($query, encoding_type: PHP_QUERY_RFC3986);
     }
 
     /**
@@ -411,7 +411,7 @@ final class XAILiveSessionDriver implements LiveSessionDriverInterface
         $normalized = [];
 
         foreach ($usage as $name => $value) {
-            $key = $prefix === '' ? (string) $name : $prefix.'.'.$name;
+            $key = $prefix === '' ? (string) $name : $prefix . '.' . $name;
             if (is_int($value) || is_float($value)) {
                 $normalized[$key] = $value;
             } elseif (is_array($value)) {

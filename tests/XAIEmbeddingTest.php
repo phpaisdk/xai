@@ -21,7 +21,7 @@ it('generates embeddings with a model id discovered from xAI model metadata', fu
         'data' => [['object' => 'embedding', 'index' => 0, 'embedding' => [0.1, 0.2]]],
         'usage' => ['prompt_tokens' => 5, 'total_tokens' => 5],
     ]));
-    $factory = new Psr17Factory;
+    $factory = new Psr17Factory();
     Generate::configure(new Sdk($client, $factory, $factory));
     XAI::create(['apiKey' => 'xai-test']);
 

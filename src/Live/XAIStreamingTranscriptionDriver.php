@@ -163,7 +163,7 @@ final class XAIStreamingTranscriptionDriver implements LiveSessionDriverInterfac
                 $events[] = new TranscriptCompleted($payload['text'], $itemId, TranscriptSource::Input);
             }
             if (($payload['speech_final'] ?? false) === true) {
-                $events[] = new SpeechStopped;
+                $events[] = new SpeechStopped();
             }
 
             return $events;
@@ -212,7 +212,7 @@ final class XAIStreamingTranscriptionDriver implements LiveSessionDriverInterfac
         $base = preg_replace('#^https://#', 'wss://', $base ?? $this->options->baseUrl) ?? $this->options->baseUrl;
         $query = $this->queryOptions();
 
-        return Url::joinPath($base, '/stt').($query === '' ? '' : '?'.$query);
+        return Url::joinPath($base, '/stt') . ($query === '' ? '' : '?' . $query);
     }
 
     private function queryOptions(): string
@@ -268,7 +268,7 @@ final class XAIStreamingTranscriptionDriver implements LiveSessionDriverInterfac
                 }
 
                 $encoded = is_bool($item) ? ($item ? 'true' : 'false') : (string) $item;
-                $pairs[] = rawurlencode((string) $name).'='.rawurlencode($encoded);
+                $pairs[] = rawurlencode((string) $name) . '=' . rawurlencode($encoded);
             }
         }
 
@@ -294,7 +294,7 @@ final class XAIStreamingTranscriptionDriver implements LiveSessionDriverInterfac
         }
 
         return is_int($payload['channel_index'] ?? null)
-            ? 'channel:'.$payload['channel_index']
+            ? 'channel:' . $payload['channel_index']
             : null;
     }
 

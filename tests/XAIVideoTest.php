@@ -13,7 +13,7 @@ use Nyholm\Psr7\Factory\Psr17Factory;
 
 function xaiVideoOptions(FakeHttpClient $client): XAIOptions
 {
-    $f = new Psr17Factory;
+    $f = new Psr17Factory();
 
     return new XAIOptions('test', 'https://api.x.ai/v1', sdk: new Sdk($client, $f, $f));
 }

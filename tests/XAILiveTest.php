@@ -35,13 +35,13 @@ afterEach(function () {
 
 function configureXAILiveWith(FakeHttpClient $client): void
 {
-    $factory = new Psr17Factory;
+    $factory = new Psr17Factory();
     Generate::configure(new Sdk($client, $factory, $factory));
 }
 
 it('connects an xAI voice agent and encodes OpenAI-compatible events', function () {
     XAI::create(['apiKey' => 'xai-live']);
-    $transport = new FakeTransport;
+    $transport = new FakeTransport();
 
     $session = Live::voice()
         ->model(XAI::model('grok-voice-latest'))
@@ -78,7 +78,7 @@ it('connects an xAI voice agent and encodes OpenAI-compatible events', function 
     $session->requestResponse();
 
     $sent = array_map(
-        static fn ($frame): array => json_decode($frame->payload, true),
+        static fn($frame): array => json_decode($frame->payload, true),
         array_slice($transport->connection->sent, 1),
     );
     expect(array_column($sent, 'type'))->toBe([
@@ -90,7 +90,7 @@ it('connects an xAI voice agent and encodes OpenAI-compatible events', function 
 
 it('normalizes xAI voice audio and cumulative transcription corrections', function () {
     XAI::create(['apiKey' => 'xai-live']);
-    $transport = new FakeTransport;
+    $transport = new FakeTransport();
     $session = Live::voice()->model(XAI::model('grok-voice-latest'))->connect($transport);
 
     $transport->connection->enqueue(
@@ -121,10 +121,10 @@ it('normalizes xAI voice audio and cumulative transcription corrections', functi
 
 it('executes registered xAI voice tools and exposes manual calls', function () {
     XAI::create(['apiKey' => 'xai-live']);
-    $transport = new FakeTransport;
+    $transport = new FakeTransport();
     $weather = Tool::make('weather', 'Get weather')
         ->input(Schema::string(name: 'city')->required())
-        ->run(fn (string $city): array => ['forecast' => "Sunny in {$city}"]);
+        ->run(fn(string $city): array => ['forecast' => "Sunny in {$city}"]);
     $session = Live::voice()
         ->model(XAI::model('grok-voice-latest'))
         ->tools([$weather])
@@ -159,7 +159,7 @@ it('executes registered xAI voice tools and exposes manual calls', function () {
     $events = iterator_to_array($session->events());
     $session->sendToolResult('call_manual', ['approved' => true]);
     $sent = array_map(
-        static fn ($frame): array => json_decode($frame->payload, true),
+        static fn($frame): array => json_decode($frame->payload, true),
         array_slice($transport->connection->sent, 1),
     );
 
@@ -178,9 +178,9 @@ it('executes registered xAI voice tools and exposes manual calls', function () {
 
 it('continues once after all parallel xAI Voice Agent tool results', function () {
     XAI::create(['apiKey' => 'xai-live']);
-    $transport = new FakeTransport;
-    $first = Tool::make('first', 'First tool')->run(fn (): string => 'one');
-    $second = Tool::make('second', 'Second tool')->run(fn (): string => 'two');
+    $transport = new FakeTransport();
+    $first = Tool::make('first', 'First tool')->run(fn(): string => 'one');
+    $second = Tool::make('second', 'Second tool')->run(fn(): string => 'two');
     $session = Live::voice()
         ->model(XAI::model('grok-voice-latest'))
         ->tools([$first, $second])
@@ -214,7 +214,7 @@ it('continues once after all parallel xAI Voice Agent tool results', function ()
 
     iterator_to_array($session->events());
     $sent = array_map(
-        static fn ($frame): array => json_decode($frame->payload, true),
+        static fn($frame): array => json_decode($frame->payload, true),
         array_slice($transport->connection->sent, 1),
     );
     $types = array_column($sent, 'type');
@@ -228,7 +228,7 @@ it('continues once after all parallel xAI Voice Agent tool results', function ()
 
 it('disables xAI server turn detection with normalized string aliases', function (string $turnDetection) {
     XAI::create(['apiKey' => 'xai-live']);
-    $transport = new FakeTransport;
+    $transport = new FakeTransport();
 
     Live::voice()
         ->model(XAI::model('grok-voice-latest'))
@@ -243,7 +243,7 @@ it('disables xAI server turn detection with normalized string aliases', function
 
 it('streams raw binary audio through xAI dedicated STT and exposes replaceable partials', function () {
     XAI::create(['apiKey' => 'xai-live']);
-    $transport = new FakeTransport;
+    $transport = new FakeTransport();
     $transport->connection->enqueue(
         TransportFrame::text(json_encode(['type' => 'transcript.created'])),
     );
@@ -316,7 +316,7 @@ it('streams raw binary audio through xAI dedicated STT and exposes replaceable p
 
 it('keeps xAI multichannel STT open until every channel is complete', function () {
     XAI::create(['apiKey' => 'xai-live']);
-    $transport = new FakeTransport;
+    $transport = new FakeTransport();
     $transport->connection->enqueue(
         TransportFrame::text(json_encode(['type' => 'transcript.created'])),
     );
@@ -353,7 +353,7 @@ it('keeps xAI multichannel STT open until every channel is complete', function (
 
 it('requires xAI transcript.created before accepting streaming audio', function () {
     XAI::create(['apiKey' => 'xai-live']);
-    $transport = new FakeTransport;
+    $transport = new FakeTransport();
     $transport->connection->enqueue(
         TransportFrame::text(json_encode(['type' => 'error', 'message' => 'Not ready'])),
     );
@@ -365,7 +365,7 @@ it('requires xAI transcript.created before accepting streaming audio', function 
 
 it('normalizes xAI response completion usage errors and closure', function () {
     XAI::create(['apiKey' => 'xai-live']);
-    $transport = new FakeTransport;
+    $transport = new FakeTransport();
     $session = Live::voice()->model(XAI::model('grok-voice-latest'))->connect($transport);
 
     $transport->connection->enqueue(
@@ -425,7 +425,7 @@ it('attaches to and hangs up xAI hosted SIP calls without an accept request', fu
     $client = new FakeHttpClient(200, '{}');
     configureXAILiveWith($client);
     XAI::create(['apiKey' => 'xai-live']);
-    $transport = new FakeTransport;
+    $transport = new FakeTransport();
 
     $call = Live::voice()
         ->model(XAI::model('grok-voice-latest'))
@@ -455,19 +455,19 @@ it('verifies signed xAI incoming-call webhooks from the raw body', function () {
         'data' => ['call_id' => 'call_webhook'],
     ], JSON_THROW_ON_ERROR);
     $secretBytes = 'xai-webhook-secret';
-    $secret = 'whsec_'.base64_encode($secretBytes);
+    $secret = 'whsec_' . base64_encode($secretBytes);
     $timestamp = (string) time();
     $messageId = 'wh_test';
     $signature = base64_encode(hash_hmac(
         'sha256',
-        $messageId.'.'.$timestamp.'.'.$payload,
+        $messageId . '.' . $timestamp . '.' . $payload,
         $secretBytes,
         true,
     ));
     $headers = [
         'Webhook-Id' => $messageId,
         'Webhook-Timestamp' => $timestamp,
-        'Webhook-Signature' => 'v1,'.$signature,
+        'Webhook-Signature' => 'v1,' . $signature,
     ];
 
     $event = XAI::verifyWebhook($payload, $headers, $secret);
@@ -475,7 +475,7 @@ it('verifies signed xAI incoming-call webhooks from the raw body', function () {
     expect($event['type'])->toBe('realtime.call.incoming')
         ->and($event['data']['call_id'])->toBe('call_webhook');
 
-    XAI::verifyWebhook($payload.' ', $headers, $secret);
+    XAI::verifyWebhook($payload . ' ', $headers, $secret);
 })->throws(InvalidArgumentException::class, 'Invalid xAI webhook signature');
 
 it('rejects dedicated xAI Live translation', function () {
@@ -484,5 +484,5 @@ it('rejects dedicated xAI Live translation', function () {
     Live::translate()
         ->model(XAI::model('grok-voice-latest'))
         ->to('es')
-        ->connect(new FakeTransport);
+        ->connect(new FakeTransport());
 })->throws(InvalidArgumentException::class, 'does not provide a dedicated Live translation');

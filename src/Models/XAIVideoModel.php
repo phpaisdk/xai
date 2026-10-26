@@ -36,7 +36,7 @@ final class XAIVideoModel extends BaseModel implements VideoModelInterface
         $options = $request->providerOptionsFor($this->provider());
         $mode = (string) ($options['mode'] ?? (($request->video !== null || isset($options['videoUrl'])) ? 'edit-video' : (isset($options['referenceImageUrls']) ? 'reference-to-video' : 'generation')));
         $endpoint = match ($mode) {
-            'edit-video' => '/videos/edits', 'extend-video' => '/videos/extensions', default => '/videos/generations'
+            'edit-video' => '/videos/edits', 'extend-video' => '/videos/extensions', default => '/videos/generations',
         };
         $sourceVideo = $request->video !== null ? $this->media($request->video) : ($options['videoUrl'] ?? null);
         $body = ['model' => $this->modelId, 'prompt' => $request->prompt];
@@ -47,7 +47,7 @@ final class XAIVideoModel extends BaseModel implements VideoModelInterface
             $body['video'] = ['url' => $sourceVideo];
         }
         if (is_array($options['referenceImageUrls'] ?? null)) {
-            $body['reference_images'] = array_map(static fn (string $url): array => ['url' => $url], $options['referenceImageUrls']);
+            $body['reference_images'] = array_map(static fn(string $url): array => ['url' => $url], $options['referenceImageUrls']);
         }
         $duration = $request->output !== null ? $request->output->duration : ($options['duration'] ?? null);
         if (! in_array($mode, ['edit-video'], true) && $duration !== null) {
@@ -79,7 +79,7 @@ final class XAIVideoModel extends BaseModel implements VideoModelInterface
         if (in_array($job->status, [VideoJobStatus::Succeeded, VideoJobStatus::Failed, VideoJobStatus::Canceled, VideoJobStatus::Expired], true)) {
             return $job;
         }
-        $payload = $this->runner($this->options->sdk)->getJson(Url::joinPath($this->options->baseUrl, '/videos/'.rawurlencode($job->id)), $this->options->authHeaders(), $this->provider());
+        $payload = $this->runner($this->options->sdk)->getJson(Url::joinPath($this->options->baseUrl, '/videos/' . rawurlencode($job->id)), $this->options->authHeaders(), $this->provider());
         $status = (string) ($payload['status'] ?? 'pending');
         if ($status === 'done' || isset($payload['video']['url'])) {
             $url = $payload['video']['url'] ?? null;
@@ -94,7 +94,7 @@ final class XAIVideoModel extends BaseModel implements VideoModelInterface
         }
 
         return match ($status) {
-            'failed' => $this->terminal($job, VideoJobStatus::Failed, $payload, (string) ($payload['error'] ?? 'xAI video generation failed.')), 'expired' => $this->terminal($job, VideoJobStatus::Expired, $payload, 'xAI video generation expired.'), default => new VideoJob($job->id, $job->provider, $job->modelId, VideoJobStatus::Running, rawResponse: $payload, providerMetadata: $job->providerMetadata)
+            'failed' => $this->terminal($job, VideoJobStatus::Failed, $payload, (string) ($payload['error'] ?? 'xAI video generation failed.')), 'expired' => $this->terminal($job, VideoJobStatus::Expired, $payload, 'xAI video generation expired.'), default => new VideoJob($job->id, $job->provider, $job->modelId, VideoJobStatus::Running, rawResponse: $payload, providerMetadata: $job->providerMetadata),
         };
     }
 
@@ -106,13 +106,13 @@ final class XAIVideoModel extends BaseModel implements VideoModelInterface
 
     private function media(Content $content): string
     {
-        return $content->source() === ContentSource::Url ? (string) $content->url() : 'data:'.$content->mimeType().';base64,'.$content->base64Data();
+        return $content->source() === ContentSource::Url ? (string) $content->url() : 'data:' . $content->mimeType() . ';base64,' . $content->base64Data();
     }
 
     private function resolution(string $value): string
     {
         return match ($value) {
-            '1280x720' => '720p', '854x480', '640x480' => '480p', default => $value
+            '1280x720' => '720p', '854x480', '640x480' => '480p', default => $value,
         };
     }
 }

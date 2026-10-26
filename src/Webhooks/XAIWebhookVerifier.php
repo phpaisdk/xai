@@ -39,7 +39,7 @@ final class XAIWebhookVerifier
 
         $expected = base64_encode(hash_hmac(
             'sha256',
-            $messageId.'.'.$timestamp.'.'.$payload,
+            $messageId . '.' . $timestamp . '.' . $payload,
             $secret,
             true,
         ));

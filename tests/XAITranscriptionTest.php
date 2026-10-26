@@ -16,7 +16,7 @@ afterEach(function () {
 
 it('uses the xAI STT wire format with the file part last', function () {
     $client = new FakeHttpClient(200, '{"text":"Speaker transcript.","duration":2.4}');
-    $factory = new Psr17Factory;
+    $factory = new Psr17Factory();
     Generate::configure(new Sdk($client, $factory, $factory));
     XAI::create(['apiKey' => 'xai-test']);
 

@@ -47,7 +47,7 @@ final readonly class XAILiveCall implements ProviderLiveCallInterface
     {
         XAILiveHttp::postEmpty(
             $this->options,
-            '/realtime/calls/'.rawurlencode($this->callId).'/hangup',
+            '/realtime/calls/' . rawurlencode($this->callId) . '/hangup',
         );
     }
 }
