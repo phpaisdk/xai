@@ -29,3 +29,12 @@ it('polls completed xAI video jobs', function () {
     $job = $model->poll(new VideoJob('req-1', 'xai', 'grok-imagine-video'));
     expect($job->status)->toBe(VideoJobStatus::Succeeded)->and($job->result?->url)->toBe('https://x.ai/video.mp4')->and($client->lastRequest?->getUri()->getPath())->toBe('/v1/videos/req-1');
 });
+
+it('keeps extension duration separate from the unknown complete video duration', function () {
+    $client = new FakeHttpClient(200, json_encode(['status' => 'done', 'video' => ['url' => 'https://x.ai/extended.mp4', 'duration' => 2]]));
+    $model = new XAIVideoModel('grok-imagine-video', xaiVideoOptions($client));
+    $job = $model->poll(new VideoJob('req-1', 'xai', 'grok-imagine-video', providerMetadata: ['xai' => ['mode' => 'extend-video']]));
+    expect($job->status)->toBe(VideoJobStatus::Succeeded)
+        ->and($job->result?->duration)->toBeNull()
+        ->and($job->providerMetadata['xai']['extensionDuration'])->toBe(2.0);
+});

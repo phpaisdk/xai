@@ -90,7 +90,15 @@ final class XAIVideoModel extends BaseModel implements VideoModelInterface
                 return $this->terminal($job, VideoJobStatus::Failed, $payload, 'xAI blocked the generated video under its content policy.');
             }
 
-            return new VideoJob($job->id, $job->provider, $job->modelId, VideoJobStatus::Succeeded, new VideoData(url: $url, duration: isset($payload['video']['duration']) ? (float) $payload['video']['duration'] : null, resolution: $job->providerMetadata[$this->provider()]['resolution'] ?? null), usage: Usage::empty(), rawResponse: $payload, providerMetadata: $job->providerMetadata);
+            $duration = isset($payload['video']['duration']) ? (float) $payload['video']['duration'] : null;
+            $metadata = $job->providerMetadata;
+            if (($metadata[$this->provider()]['mode'] ?? null) === 'extend-video') {
+                // xAI reports the generated extension, not the complete output's duration.
+                $metadata[$this->provider()]['extensionDuration'] = $duration;
+                $duration = null;
+            }
+
+            return new VideoJob($job->id, $job->provider, $job->modelId, VideoJobStatus::Succeeded, new VideoData(url: $url, duration: $duration, resolution: $metadata[$this->provider()]['resolution'] ?? null), usage: Usage::empty(), rawResponse: $payload, providerMetadata: $metadata);
         }
 
         return match ($status) {
