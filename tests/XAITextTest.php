@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use AiSdk\Content;
 use AiSdk\Exceptions\CapabilityNotSupportedException;
+use AiSdk\Exceptions\InvalidArgumentException;
+use AiSdk\Exceptions\InvalidResponseException;
 use AiSdk\Generate;
 use AiSdk\InputEncoding;
 use AiSdk\Message;
@@ -164,4 +166,39 @@ it('rejects unsupported audio input before sending an xAI request', function () 
         ->toThrow(CapabilityNotSupportedException::class);
 
     expect($client->lastRequest)->toBeNull();
+});
+
+it('decodes timestamped speech audio and preserves alignment metadata', function () {
+    $payload = ['audio' => base64_encode('audio-bytes'), 'content_type' => 'audio/mpeg', 'duration' => 0.5, 'audio_timestamps' => ['graph_chars' => ['H', 'i'], 'graph_times' => [[0, 0.2], [0.2, 0.5]]]];
+    $client = new FakeHttpClient(200, json_encode($payload));
+    configureXAIWith($client);
+    XAI::create(['apiKey' => 'xai-test']);
+    $result = Generate::speech('Hi')->model(XAI::model('grok-voice-latest'))->providerOptions('xai', ['with_timestamps' => true])->run();
+    expect($result->output->data)->toBe('audio-bytes')
+        ->and($result->output->mimeType)->toBe('audio/mpeg')
+        ->and($result->output->duration)->toBe(0.5)
+        ->and($result->providerMetadata['xai']['audioTimestamps'])->toBe($payload['audio_timestamps'])
+        ->and($client->lastRequest->getHeaderLine('Accept'))->toBe('application/json');
+});
+
+it('rejects malformed timestamped speech audio', function () {
+    configureXAIWith(new FakeHttpClient(200, '{"audio":"not base64!"}'));
+    XAI::create(['apiKey' => 'xai-test']);
+    Generate::speech('Hi')->model(XAI::model('grok-voice-latest'))->providerOptions('xai', ['with_timestamps' => true])->run();
+})->throws(InvalidResponseException::class);
+
+it('rejects unsupported portable xAI speech codecs before sending', function (string $format) {
+    $client = new FakeHttpClient(200, 'unused', 'audio/mpeg');
+    configureXAIWith($client);
+    XAI::create(['apiKey' => 'xai-test']);
+    expect(fn() => Generate::speech('Hi')->model(XAI::model('grok-voice-latest'))->format($format)->run())->toThrow(InvalidArgumentException::class)
+        ->and($client->requests)->toBe([]);
+})->with(['opus', 'aac', 'flac']);
+
+it('reports the codec from the final provider speech options', function () {
+    configureXAIWith(new FakeHttpClient(200, 'audio-bytes', ''));
+    XAI::create(['apiKey' => 'xai-test']);
+    $result = Generate::speech('Hi')->model(XAI::model('grok-voice-latest'))->format('mp3')->providerOptions('xai', ['output_format' => ['codec' => 'alaw']])->run();
+    expect($result->output->mimeType)->toBe('audio/alaw')
+        ->and($result->providerMetadata['xai']['format'])->toBe('alaw');
 });
