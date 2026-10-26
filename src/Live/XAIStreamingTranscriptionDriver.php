@@ -42,6 +42,7 @@ final class XAIStreamingTranscriptionDriver implements LiveSessionDriverInterfac
         private readonly XAIOptions $options,
         private readonly LiveRequest $request,
         TransportInterface $transport,
+        private readonly ?string $modelId = null,
     ) {
         if ($request->tools !== []) {
             throw new InvalidArgumentException('xAI streaming transcription does not support tools.');
@@ -231,6 +232,7 @@ final class XAIStreamingTranscriptionDriver implements LiveSessionDriverInterfac
         $query = array_replace([
             'encoding' => $this->encoding(),
             'interim_results' => true,
+            ...($this->modelId === null ? [] : ['model' => $this->modelId]),
         ], $direct, $providerQuery, $raw);
 
         if (is_string($this->request->options['language'] ?? null)) {
@@ -238,6 +240,7 @@ final class XAIStreamingTranscriptionDriver implements LiveSessionDriverInterfac
         }
 
         $allowed = array_flip([
+            'model',
             'sample_rate',
             'encoding',
             'interim_results',

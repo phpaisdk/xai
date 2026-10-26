@@ -21,7 +21,7 @@ it('uses the xAI STT wire format with the file part last', function () {
     XAI::create(['apiKey' => 'xai-test']);
 
     $result = Generate::transcription(Content::audio('mp3-bytes', 'audio/mpeg', 'clip.mp3'))
-        ->model(XAI::model('grok-transcribe'))
+        ->model(XAI::model('grok-voice-transcribe-2.0'))
         ->providerOptions('xai', ['diarize' => true, 'keyterm' => ['PHP', 'SDK']])
         ->run();
 
@@ -34,7 +34,7 @@ it('uses the xAI STT wire format with the file part last', function () {
 
     expect($result->output->text)->toBe('Speaker transcript.')
         ->and((string) $client->lastRequest?->getUri())->toBe('https://api.x.ai/v1/stt')
-        ->and($body)->not->toContain('name="model"')
+        ->and($body)->toContain('name="model"', 'grok-voice-transcribe-2.0')
         ->and($body)->toContain('name="diarize"', 'name="keyterm"', 'clip.mp3')
         ->and($filePosition)->toBeGreaterThan($keytermPosition);
 });

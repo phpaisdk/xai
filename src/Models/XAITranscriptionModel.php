@@ -38,7 +38,7 @@ final class XAITranscriptionModel extends BaseModel implements TranscriptionMode
             $this->modelId,
             $this->provider(),
             $request,
-            includeModel: false,
+            includeModel: true,
             supportsUrl: true,
         );
         $url = Url::joinPath($this->options->baseUrl, '/stt');

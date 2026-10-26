@@ -48,6 +48,7 @@ final class XAILiveModel extends BaseModel implements LiveCallModelInterface, Li
                 transport: $transport,
             ),
             LiveOperation::Transcribe => new XAIStreamingTranscriptionDriver(
+                modelId: $this->modelId,
                 options: $this->options,
                 request: $request,
                 transport: $transport,

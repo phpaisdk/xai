@@ -259,6 +259,7 @@ it('streams raw binary audio through xAI dedicated STT and exposes replaceable p
 
     expect($transport->endpoint?->url)
         ->toContain('wss://api.x.ai/v1/stt?')
+        ->toContain('model=grok-transcribe')
         ->toContain('encoding=pcm')
         ->toContain('interim_results=true')
         ->toContain('language=en')
@@ -486,3 +487,21 @@ it('rejects dedicated xAI Live translation', function () {
         ->to('es')
         ->connect(new FakeTransport());
 })->throws(InvalidArgumentException::class, 'does not provide a dedicated Live translation');
+
+it('rejects WebRTC before making an xAI HTTP request', function () {
+    $client = new FakeHttpClient(200, '{}');
+    configureXAILiveWith($client);
+    XAI::create(['apiKey' => 'xai-test']);
+    expect(fn() => Live::voice()->model(XAI::model('grok-voice-latest'))->webRtc('v=0'))
+        ->toThrow(InvalidArgumentException::class, 'does not support WebRTC')
+        ->and($client->requests)->toBe([]);
+});
+
+it('rejects transcription client secrets before making an xAI HTTP request', function () {
+    $client = new FakeHttpClient(200, '{}');
+    configureXAILiveWith($client);
+    XAI::create(['apiKey' => 'xai-test']);
+    expect(fn() => Live::transcribe()->model(XAI::model('grok-voice-transcribe-2.0'))->clientSecret())
+        ->toThrow(InvalidArgumentException::class, 'only for Voice Agent')
+        ->and($client->requests)->toBe([]);
+});
