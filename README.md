@@ -414,3 +414,13 @@ Live network verification is separate from the default test run.
 - [Contributing](https://github.com/phpaisdk/.github/blob/main/CONTRIBUTING.md)
 - [Support](https://github.com/phpaisdk/.github/blob/main/SUPPORT.md)
 - For private security reports, email [security@phpaisdk.com](mailto:security@phpaisdk.com).
+
+## 0.10.0 live conformance notes
+
+- Speech supports MP3, WAV and PCM through `format()`. Use `providerOptions('xai', ['output_format' => ['codec' => 'mulaw' /* or alaw */, 'sample_rate' => 8000]])` for telephony codecs. AAC, FLAC and Opus are rejected locally for xAI speech.
+- `providerOptions('xai', ['with_timestamps' => true])` returns decoded audio, duration and `providerMetadata['xai']['audioTimestamps']` alignment data.
+- Transcription forwards the opaque model identifier in REST forms and dedicated WebSocket query parameters. Use a model available to your account, such as `grok-voice-transcribe-2.0`.
+- `grok-imagine-video-1.5-lite` supports text/image generation. Use a model supporting the selected mode for references, editing and extensions; `grok-imagine-video` supports those paths. Extension requests require at least two seconds of source video and extension duration.
+- For extended videos, `output->duration` remains null because the provider reports only the generated extension length. Read `providerMetadata['xai']['extensionDuration']` for that length; it is not the complete output duration.
+- Embedding model availability is account-specific. Check `/v1/embedding-models`; an empty list means live embedding validation needs an enabled model. Model ids remain opaque and are never validated locally.
+- SIP call attachment and hangup require an actual inbound call id; signed webhook handling can be verified locally without placing a phone call.
