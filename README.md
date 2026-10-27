@@ -424,3 +424,27 @@ Live network verification is separate from the default test run.
 - For extended videos, `output->duration` remains null because the provider reports only the generated extension length. Read `providerMetadata['xai']['extensionDuration']` for that length; it is not the complete output duration.
 - Embedding model availability is account-specific. Check `/v1/embedding-models`; an empty list means live embedding validation needs an enabled model. Model ids remain opaque and are never validated locally.
 - SIP call attachment and hangup require an actual inbound call id; signed webhook handling can be verified locally without placing a phone call.
+
+## Files and hosted tools (0.10.0 preparation)
+
+`XAI::files()` implements core `FileStoreInterface`. Uploads default to `purpose=assistants`; set upload options such as `['expires_after' => 86400]` for xAI retention. Metadata fields are sent before the file multipart field. Pagination maps the core cursor to xAI's `pagination_token` and supports at most 100 files per page.
+
+Stored files use `Content::storedFile($stored->reference)` and automatically select Responses. Inline file attachments also select Responses. xAI file attachments activate its server-side attachment search and incur provider tool charges; they are not persistent Collections.
+
+```php
+use AiSdk\Generate;
+use AiSdk\XAI;
+use AiSdk\XAI\Tools;
+
+$result = Generate::text('Research this topic')->model(XAI::model('your-model-id'))
+    ->providerOptions('xai', ['serverTools' => [
+        Tools::webSearch(),
+        Tools::xSearch(['from_date' => '2026-10-01']),
+        Tools::codeExecution(),
+        Tools::collectionsSearch(['your-collection-id']),
+    ]])->run();
+```
+
+`serverTools` selects Responses and combines hosted tools with local `tools()` definitions. Hosted tools execute remotely, so local tool approval does not govern them. Only enable hosted capabilities your application authorizes. `api=chat` is rejected when hosted tools are configured. Explicit `api=responses` is available without hosted tools. Synchronous raw response output retains provider tool results and citations; normalized citation/tool-progress events and collection administration remain follow-up work.
+
+Sources: [files](https://docs.x.ai/developers/files), [file management](https://docs.x.ai/developers/files/managing-files), [tools](https://docs.x.ai/developers/tools/overview), [Collections search](https://docs.x.ai/developers/tools/collections-search).
