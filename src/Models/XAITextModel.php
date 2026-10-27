@@ -54,7 +54,7 @@ final class XAITextModel extends BaseModel implements TextModelInterface
         $this->ensureTextRequestSupported($request, self::ADAPTER_CAPABILITIES);
 
         if ($this->usesResponses($request)) {
-            $body = \AiSdk\OpenAICompatible\ResponsesRequestBuilder::build($this->modelId, $this->provider(), $request, stream: false);
+            $body = $this->responsesBody($request, false);
             $url = Url::joinPath($this->options->baseUrl, '/responses');
 
             return \AiSdk\OpenAICompatible\ResponsesResponseParser::parse($this->runner($this->options->sdk)->postJson($url, $body, $this->options->authHeaders(), $this->provider()), $this->provider());
@@ -74,7 +74,7 @@ final class XAITextModel extends BaseModel implements TextModelInterface
         $this->ensureTextRequestSupported($request, self::ADAPTER_CAPABILITIES, streaming: true);
 
         if ($this->usesResponses($request)) {
-            $body = \AiSdk\OpenAICompatible\ResponsesRequestBuilder::build($this->modelId, $this->provider(), $request, stream: true);
+            $body = $this->responsesBody($request, true);
             $url = Url::joinPath($this->options->baseUrl, '/responses');
             yield from \AiSdk\OpenAICompatible\ResponsesStreamParser::parse($this->runner($this->options->sdk)->postStream($url, $body, $this->options->authHeaders(), $this->provider()), $this->provider());
 
@@ -96,6 +96,13 @@ final class XAITextModel extends BaseModel implements TextModelInterface
         if ($api !== null && ! in_array($api, ['responses', 'chat'], true)) {
             throw new \InvalidArgumentException('api must be responses or chat.');
         }
+        if (isset($options['serverTools'])) {
+            if ($api === 'chat') {
+                throw new \InvalidArgumentException('Server tools require the Responses API.');
+            }
+
+            return true;
+        }
         if ($api !== null) {
             return $api === 'responses';
         }
@@ -108,5 +115,25 @@ final class XAITextModel extends BaseModel implements TextModelInterface
         }
 
         return false;
+    }
+    /** @return array<string, mixed> */
+    private function responsesBody(TextModelRequest $request, bool $stream): array
+    {
+        $body = \AiSdk\OpenAICompatible\ResponsesRequestBuilder::build($this->modelId, $this->provider(), $request, $stream);
+        $tools = $body['serverTools'] ?? [];
+        unset($body['serverTools']);
+        if (! is_array($tools) || ! array_is_list($tools)) {
+            throw new \InvalidArgumentException('serverTools must be a list of xAI tool configurations.');
+        }
+        foreach ($tools as $tool) {
+            if (! is_array($tool) || ! is_string($tool['type'] ?? null) || $tool['type'] === 'function') {
+                throw new \InvalidArgumentException('Use tools() for local function tools.');
+            }
+        }
+        if ($tools !== []) {
+            $body['tools'] = array_merge(is_array($body['tools'] ?? null) ? $body['tools'] : [], $tools);
+        }
+
+        return $body;
     }
 }
