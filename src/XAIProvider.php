@@ -31,6 +31,11 @@ final class XAIProvider extends BaseProvider implements EmbeddingProviderInterfa
 {
     public function __construct(public readonly XAIOptions $options) {}
 
+    public function files(): \AiSdk\Contracts\FileStoreInterface
+    {
+        return new \AiSdk\OpenAICompatible\Files\CompatibleFileStore($this->options->sdk ?? \AiSdk\Generate::sdk(), $this->options->baseUrl, $this->options->authHeaders(), $this->name(), 'assistants', cursorParameter: 'pagination_token', cursorField: 'pagination_token', maxPageSize: 100);
+    }
+
     public function name(): string
     {
         return XAIOptions::PROVIDER_NAME;

@@ -26,12 +26,18 @@ final class XAITextModel extends BaseModel implements TextModelInterface
         Capability::Reasoning,
         Capability::TextInput,
         Capability::ImageInput,
+        Capability::FileInput,
     ];
 
     public function __construct(
         private readonly string $modelId,
         private readonly XAIOptions $options,
     ) {}
+
+    protected function supportsStoredFiles(): bool
+    {
+        return true;
+    }
 
     public function provider(): string
     {
@@ -47,6 +53,13 @@ final class XAITextModel extends BaseModel implements TextModelInterface
     {
         $this->ensureTextRequestSupported($request, self::ADAPTER_CAPABILITIES);
 
+        if ($this->usesResponses($request)) {
+            $body = \AiSdk\OpenAICompatible\ResponsesRequestBuilder::build($this->modelId, $this->provider(), $request, stream: false);
+            $url = Url::joinPath($this->options->baseUrl, '/responses');
+
+            return \AiSdk\OpenAICompatible\ResponsesResponseParser::parse($this->runner($this->options->sdk)->postJson($url, $body, $this->options->authHeaders(), $this->provider()), $this->provider());
+        }
+
         $body = ChatRequestBuilder::build($this->modelId, $this->provider(), $request, stream: false);
         $url = Url::joinPath($this->options->baseUrl, '/chat/completions');
 
@@ -60,6 +73,14 @@ final class XAITextModel extends BaseModel implements TextModelInterface
     {
         $this->ensureTextRequestSupported($request, self::ADAPTER_CAPABILITIES, streaming: true);
 
+        if ($this->usesResponses($request)) {
+            $body = \AiSdk\OpenAICompatible\ResponsesRequestBuilder::build($this->modelId, $this->provider(), $request, stream: true);
+            $url = Url::joinPath($this->options->baseUrl, '/responses');
+            yield from \AiSdk\OpenAICompatible\ResponsesStreamParser::parse($this->runner($this->options->sdk)->postStream($url, $body, $this->options->authHeaders(), $this->provider()), $this->provider());
+
+            return;
+        }
+
         $body = ChatRequestBuilder::build($this->modelId, $this->provider(), $request, stream: true);
         $url = Url::joinPath($this->options->baseUrl, '/chat/completions');
 
@@ -67,5 +88,25 @@ final class XAITextModel extends BaseModel implements TextModelInterface
             ->postStream($url, $body, $this->options->authHeaders(), $this->provider());
 
         yield from ChatStreamParser::parse($events, $this->provider());
+    }
+    private function usesResponses(TextModelRequest $request): bool
+    {
+        $options = $request->providerOptionsFor($this->provider());
+        $api = $options['api'] ?? null;
+        if ($api !== null && ! in_array($api, ['responses', 'chat'], true)) {
+            throw new \InvalidArgumentException('api must be responses or chat.');
+        }
+        if ($api !== null) {
+            return $api === 'responses';
+        }
+        foreach ($request->messages as $message) {
+            foreach ($message->content as $content) {
+                if ($content->type === \AiSdk\Content::TYPE_FILE || $content->fileReference() !== null) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
