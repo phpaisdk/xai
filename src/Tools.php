@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace AiSdk\XAI;
 
+use AiSdk\Exceptions\InvalidArgumentException;
+
 /** xAI-hosted tools execute remotely, never through the local ToolExecutor. */
 final class Tools
 {
@@ -36,11 +38,11 @@ final class Tools
     public static function collectionsSearch(array $collectionIds, array $options = []): array
     {
         if ($collectionIds === []) {
-            throw new \InvalidArgumentException('At least one collection id is required.');
+            throw new InvalidArgumentException('At least one collection id is required.');
         }
         foreach ($collectionIds as $id) {
             if ($id === '') {
-                throw new \InvalidArgumentException('Collection ids cannot be empty.');
+                throw new InvalidArgumentException('Collection ids cannot be empty.');
             }
         }
 

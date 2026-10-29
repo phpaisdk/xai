@@ -7,6 +7,7 @@ namespace AiSdk\XAI\Models;
 use AiSdk\Capability;
 use AiSdk\Contracts\BaseModel;
 use AiSdk\Contracts\TextModelInterface;
+use AiSdk\Exceptions\InvalidArgumentException;
 use AiSdk\OpenAICompatible\ChatRequestBuilder;
 use AiSdk\OpenAICompatible\ChatResponseParser;
 use AiSdk\OpenAICompatible\ChatStreamParser;
@@ -94,11 +95,11 @@ final class XAITextModel extends BaseModel implements TextModelInterface
         $options = $request->providerOptionsFor($this->provider());
         $api = $options['api'] ?? null;
         if ($api !== null && ! in_array($api, ['responses', 'chat'], true)) {
-            throw new \InvalidArgumentException('api must be responses or chat.');
+            throw new InvalidArgumentException('api must be responses or chat.');
         }
         if (isset($options['serverTools'])) {
             if ($api === 'chat') {
-                throw new \InvalidArgumentException('Server tools require the Responses API.');
+                throw new InvalidArgumentException('Server tools require the Responses API.');
             }
 
             return true;
@@ -123,11 +124,11 @@ final class XAITextModel extends BaseModel implements TextModelInterface
         $tools = $body['serverTools'] ?? [];
         unset($body['serverTools']);
         if (! is_array($tools) || ! array_is_list($tools)) {
-            throw new \InvalidArgumentException('serverTools must be a list of xAI tool configurations.');
+            throw new InvalidArgumentException('serverTools must be a list of xAI tool configurations.');
         }
         foreach ($tools as $tool) {
             if (! is_array($tool) || ! is_string($tool['type'] ?? null) || $tool['type'] === 'function') {
-                throw new \InvalidArgumentException('Use tools() for local function tools.');
+                throw new InvalidArgumentException('Use tools() for local function tools.');
             }
         }
         if ($tools !== []) {
